@@ -16,7 +16,19 @@ public class GameManager : MonoBehaviour
     private VideoGraph lastVid;
     public Camera cam;
     VideoGraph nextVid;
-
+    private KeyCode[] keyCodes = {
+         KeyCode.Alpha0,
+         KeyCode.Alpha1,
+         KeyCode.Alpha2,
+         KeyCode.Alpha3,
+         KeyCode.Alpha4,
+         KeyCode.Alpha5,
+         KeyCode.Alpha6,
+         KeyCode.Alpha7,
+         KeyCode.Alpha8,
+         KeyCode.Alpha9,
+     };
+    private int selectedIndex = 0;
 
     void Start()
     {
@@ -49,6 +61,7 @@ public class GameManager : MonoBehaviour
         yield return 0;
     }
 
+
     IEnumerator playVideo(bool first)
     {
         StartCoroutine(loadVideos(currentVid));
@@ -69,19 +82,31 @@ public class GameManager : MonoBehaviour
         currentVid.videoPlayer.Play();
         if (currentVid.isStableState)
         {
-            Debug.Log("Waiting for input");
-            while (!Input.GetKeyDown(KeyCode.Q) &&!Input.GetKeyDown(KeyCode.W))
-            {
+            while (!(Input.GetKey(KeyCode.Q)) || selectedIndex == 0 || selectedIndex > currentVid.nexts.Length)
+                {
+                    for (int i = 0; i < keyCodes.Length; i++)
+                    {
+                        if (Input.GetKeyDown(keyCodes[i]))
+                        {
+                            int numberPressed = i;
+                            selectedIndex = selectedIndex * 10 + numberPressed;
+                            Debug.Log(numberPressed + " total: " + selectedIndex);
+                        }
+                    }
+                if (selectedIndex > currentVid.nexts.Length)
+                {
+                   //Debug.Log("Current Selected Number too high");
+                }
+                if(Input.GetKeyDown(KeyCode.Backspace) || Input.GetKeyDown(KeyCode.Delete))
+                 {
+                    Debug.Log("Input deleted");
+                    selectedIndex = 0;
+                 }
                 yield return null;
             }
-            Debug.Log("Press Detected");
-            if (Input.GetKeyDown(KeyCode.Q) || currentVid.nexts.Length<=1)
-            {
-                nextVid = currentVid.nexts[0];
-            }else if(Input.GetKeyDown(KeyCode.W)&& currentVid.nexts.Length > 1)
-            {
-                nextVid = currentVid.nexts[1];
-            }
+            Debug.Log("Press Detected with number " + selectedIndex);
+            nextVid = currentVid.nexts[selectedIndex - 1];
+            selectedIndex = 0;
         }
  
         Debug.LogWarning("Done Preparing current Video");
